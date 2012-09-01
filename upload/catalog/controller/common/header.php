@@ -11,38 +11,23 @@ class ControllerCommonHeader extends Controller {
 		
 		$this->data['description'] = $this->document->getDescription();
 		$this->data['keywords'] = $this->document->getKeywords();
+		
+		//referrer - start
+      if(!$this->data['description']){
+        $this->load->model('setting/setting');
+        $description = $this->model_setting_setting->getSetting('config');
+        $this->document->setDescription($description['config_meta_description']);
+        $this->data['description'] = $this->document->getDescription();
+      }
+    //referrer - end
+    
 		$this->data['links'] = $this->document->getLinks();	 
 		$this->data['styles'] = $this->document->getStyles();
 		$this->data['scripts'] = $this->document->getScripts();
 		$this->data['lang'] = $this->language->get('code');
 		$this->data['direction'] = $this->language->get('direction');
 		$this->data['google_analytics'] = html_entity_decode($this->config->get('config_google_analytics'), ENT_QUOTES, 'UTF-8');
-
-		// Whos Online
-		if ($this->config->get('config_customer_online')) {
-			$this->load->model('tool/online');
-	
-			if (isset($this->request->server['REMOTE_ADDR'])) {
-				$ip = $this->request->server['REMOTE_ADDR'];	
-			} else {
-				$ip = ''; 
-			}
-			
-			if (isset($this->request->server['HTTP_HOST']) && isset($this->request->server['REQUEST_URI'])) {
-				$url = 'http://' . $this->request->server['HTTP_HOST'] . $this->request->server['REQUEST_URI'];	
-			} else {
-				$url = '';
-			}
-			
-			if (isset($this->request->server['HTTP_REFERER'])) {
-				$referer = $this->request->server['HTTP_REFERER'];	
-			} else {
-				$referer = '';
-			}
-						
-			$this->model_tool_online->whosonline($ip, $this->customer->getId(), $url, $referer);
-		}
-				
+		
 		$this->language->load('common/header');
 		
 		if (isset($this->request->server['HTTPS']) && (($this->request->server['HTTPS'] == 'on') || ($this->request->server['HTTPS'] == '1'))) {
@@ -75,7 +60,7 @@ class ControllerCommonHeader extends Controller {
     	$this->data['text_checkout'] = $this->language->get('text_checkout');
 				
 		$this->data['home'] = $this->url->link('common/home');
-		$this->data['wishlist'] = $this->url->link('account/wishlist', '', 'SSL');
+		$this->data['wishlist'] = $this->url->link('account/wishlist');
 		$this->data['logged'] = $this->customer->isLogged();
 		$this->data['account'] = $this->url->link('account/account', '', 'SSL');
 		$this->data['shopping_cart'] = $this->url->link('checkout/cart');
@@ -89,7 +74,6 @@ class ControllerCommonHeader extends Controller {
 		
 		// Menu
 		$this->load->model('catalog/category');
-		
 		$this->load->model('catalog/product');
 		
 		$this->data['categories'] = array();
@@ -105,15 +89,19 @@ class ControllerCommonHeader extends Controller {
 				foreach ($children as $child) {
 					$data = array(
 						'filter_category_id'  => $child['category_id'],
-						'filter_sub_category' => true
-					);
-					
-					$product_total = $this->model_catalog_product->getTotalProducts($data);
-									
+						'filter_sub_category' => true	
+					);		
+						
+					if ($this->config->get('config_product_count')) {
+						$product_total = $this->model_catalog_product->getTotalProducts($data);
+						
+						$child['name'] .= ' (' . $product_total . ')';
+					}
+								
 					$children_data[] = array(
-						'name'  => $child['name'] . ($this->config->get('config_product_count') ? ' (' . $product_total . ')' : ''),
+						'name'  => $child['name'],
 						'href'  => $this->url->link('product/category', 'path=' . $category['category_id'] . '_' . $child['category_id'])	
-					);						
+					);					
 				}
 				
 				// Level 1

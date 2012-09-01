@@ -11,6 +11,22 @@ class ControllerAccountRegister extends Controller {
 		
 		$this->document->setTitle($this->language->get('heading_title'));
 		
+		
+		//referrer - start
+      $this->load->model('setting/setting');
+      $this->data['referrer_settings'] = $this->model_setting_setting->getSetting('referrer');
+      if(isset($this->data['referrer_settings']['referrer_status'])){
+      $this->data['referrer_enabled'] = $this->data['referrer_settings']['referrer_status'];
+      }else{$this->data['referrer_enabled'] = false;}
+      $this->data['ref_id'] = $this->language->get('ref_id');
+      if (isset($this->request->get['ref'])){
+        $this->data['get_ref_id'] = $this->request->get['ref'];
+      }else{
+        $this->data['get_ref_id'] = '';
+      }
+    //referrer - end
+
+
 		$this->load->model('account/customer');
 		
     	if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
@@ -74,7 +90,7 @@ class ControllerAccountRegister extends Controller {
     	$this->data['entry_telephone'] = $this->language->get('entry_telephone');
     	$this->data['entry_fax'] = $this->language->get('entry_fax');
 		$this->data['entry_company'] = $this->language->get('entry_company');
-		$this->data['entry_customer_group'] = $this->language->get('entry_customer_group');
+		$this->data['entry_account'] = $this->language->get('entry_account');
 		$this->data['entry_company_id'] = $this->language->get('entry_company_id');
 		$this->data['entry_tax_id'] = $this->language->get('entry_tax_id');
     	$this->data['entry_address_1'] = $this->language->get('entry_address_1');
@@ -381,12 +397,12 @@ class ControllerAccountRegister extends Controller {
 			
 		if ($customer_group) {	
 			// Company ID
-			if ($customer_group['company_id_display'] && $customer_group['company_id_required'] && empty($this->request->post['company_id'])) {
+			if ($customer_group['company_id_display'] && $customer_group['company_id_required'] && !$this->request->post['company_id']) {
 				$this->error['company_id'] = $this->language->get('error_company_id');
 			}
 			
 			// Tax ID 
-			if ($customer_group['tax_id_display'] && $customer_group['tax_id_required'] && empty($this->request->post['tax_id'])) {
+			if ($customer_group['tax_id_display'] && $customer_group['tax_id_required'] && !$this->request->post['tax_id']) {
 				$this->error['tax_id'] = $this->language->get('error_tax_id');
 			}						
 		}
@@ -411,7 +427,7 @@ class ControllerAccountRegister extends Controller {
 			// VAT Validation
 			$this->load->helper('vat');
 			
-			if ($this->config->get('config_vat') && $this->request->post['tax_id'] && (vat_validation($country_info['iso_code_2'], $this->request->post['tax_id']) == 'invalid')) {
+			if ($this->config->get('config_vat') && $this->request->post['tax_id'] && (vat_validation($country_info['iso_code_2'], $this->request->post['tax_id']) != 'invalid')) {
 				$this->error['tax_id'] = $this->language->get('error_vat');
 			}
 		}

@@ -18,8 +18,8 @@ $_['entry_lastname']       = 'Last Name:';
 $_['entry_email']          = 'E-Mail:';
 $_['entry_telephone']      = 'Telephone:';
 $_['entry_fax']            = 'Fax:';
+$_['entry_account']        = 'Account:';
 $_['entry_company']        = 'Company:';
-$_['entry_customer_group'] = 'Business Type:';
 $_['entry_company_id']     = 'Company ID:';
 $_['entry_tax_id']         = 'Tax ID:';
 $_['entry_address_1']      = 'Address 1:';
@@ -49,4 +49,7 @@ $_['error_postcode']       = 'Postcode must be between 2 and 10 characters!';
 $_['error_country']        = 'Please select a country!';
 $_['error_zone']           = 'Please select a region / state!';
 $_['error_agree']          = 'Warning: You must agree to the %s!';
+
+//referrer
+$_['ref_id']               = 'Referral ID';
 ?>

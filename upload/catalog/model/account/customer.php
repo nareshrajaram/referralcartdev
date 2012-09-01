@@ -1,6 +1,20 @@
 <?php
 class ModelAccountCustomer extends Model {
 	public function addCustomer($data) {
+	
+	//referrer - start
+    if(isset($data['referrer'])){
+      $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE customer_id = '" . $this->db->escape($data['referrer']) . "'");
+      if($query->row){
+        $referrar_id = $data['referrer'];
+      }else{
+        $referrar_id = 0;
+      }
+    }
+  //referrer - end
+
+
+
 		if (isset($data['customer_group_id']) && is_array($this->config->get('config_customer_group_display')) && in_array($data['customer_group_id'], $this->config->get('config_customer_group_display'))) {
 			$customer_group_id = $data['customer_group_id'];
 		} else {
@@ -19,6 +33,13 @@ class ModelAccountCustomer extends Model {
 		
 		$address_id = $this->db->getLastId();
 
+		//referrer - start
+      $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "setting WHERE `key` = 'referrer_status'");
+      if(isset($query->row['value']) AND $query->row['value'] == 1){
+        $this->db->query("UPDATE " . DB_PREFIX . "customer SET referrer_id = '$referrar_id' WHERE customer_id = '$customer_id'");
+      }
+    //referrer - end 
+    
       	$this->db->query("UPDATE " . DB_PREFIX . "customer SET address_id = '" . (int)$address_id . "' WHERE customer_id = '" . (int)$customer_id . "'");
 		
 		$this->language->load('mail/customer');

@@ -27,6 +27,14 @@ class ModelCheckoutOrder extends Model {
 			$this->db->query("INSERT INTO " . DB_PREFIX . "order_total SET order_id = '" . (int)$order_id . "', code = '" . $this->db->escape($total['code']) . "', title = '" . $this->db->escape($total['title']) . "', text = '" . $this->db->escape($total['text']) . "', `value` = '" . (float)$total['value'] . "', sort_order = '" . (int)$total['sort_order'] . "'");
 		}	
 
+//referrer
+  $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "setting WHERE `key` = 'referrer_status'");
+  if($query->row['value'] == 1){
+    $total_price  = (float)$data['total'];
+    if($data['payment_code'] == 'referrer'){$this->db->query("UPDATE `" . DB_PREFIX . "customer` SET `referrer_price` = referrer_price-$total_price WHERE `customer_id` = '".$data['customer_id']."'");}
+  }
+//referrer - end
+
 		return $order_id;
 	}
 

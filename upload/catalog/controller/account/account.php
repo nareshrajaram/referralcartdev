@@ -35,6 +35,21 @@ class ControllerAccountAccount extends Controller {
 		
     	$this->data['heading_title'] = $this->language->get('heading_title');
 
+
+    	//referrer - start
+        $this->load->model('setting/setting');
+        $this->data['referrer_settings'] = $this->model_setting_setting->getSetting('referrer');
+        if(isset($this->data['referrer_settings']['referrer_status'])){
+          $this->data['referrer_enabled'] = $this->data['referrer_settings']['referrer_status'];
+        }else{
+          $this->data['referrer_enabled'] = false;
+        }
+        
+        $this->data['referrers'] = $this->url->link('account/referrers', '', 'SSL');
+        $this->data['text_view_refferers'] = $this->language->get('text_view_refferers');
+      //referrer - end 
+      
+      
     	$this->data['text_my_account'] = $this->language->get('text_my_account');
 		$this->data['text_my_orders'] = $this->language->get('text_my_orders');
 		$this->data['text_my_newsletter'] = $this->language->get('text_my_newsletter');

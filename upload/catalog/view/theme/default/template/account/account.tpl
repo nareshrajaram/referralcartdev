@@ -17,6 +17,7 @@
       <li><a href="<?php echo $password; ?>"><?php echo $text_password; ?></a></li>
       <li><a href="<?php echo $address; ?>"><?php echo $text_address; ?></a></li>
       <li><a href="<?php echo $wishlist; ?>"><?php echo $text_wishlist; ?></a></li>
+      <?php if($referrer_enabled){?><li><a href="<?php echo $referrers; ?>"><?php echo $text_view_refferers; ?></a></li><?php }?>
     </ul>
   </div>
   <h2><?php echo $text_my_orders; ?></h2>

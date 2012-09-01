@@ -17,4 +17,7 @@ $_['text_reward']        = 'Your Reward Points';
 $_['text_return']        = 'View your return requests'; 
 $_['text_transaction']   = 'Your Transactions'; 
 $_['text_newsletter']    = 'Subscribe / unsubscribe to newsletter';
+
+//referrer
+$_['text_view_refferers']= 'View referrers';
 ?>

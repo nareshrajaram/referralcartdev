@@ -139,6 +139,69 @@ class ModelSaleOrder extends Model {
 		$this->db->query("UPDATE `" . DB_PREFIX . "order` SET total = '" . (float)$total . "', affiliate_id = '" . (int)$affiliate_id . "', commission = '" . (float)$commission . "' WHERE order_id = '" . (int)$order_id . "'"); 	
 	}
 	
+	
+	
+	
+	
+	
+	public function giveProfit($data){
+    $ref_id   = $data['ref_id'];
+    $sponzors = array();
+    $i        = 1;
+    $j        = 0;
+    while($i<=$data['referrer_level']){
+      $query           = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE `customer_id` = '$ref_id'");
+      if($query->row){
+        $j++;
+        $sponzors[$j]    = $query->row['customer_id'];
+        $ref_id = $query->row['referrer_id'];
+      }
+      $i++;
+    }
+
+
+    $j = 1;
+    foreach($sponzors as $sponzor){
+      if($data['profit_type'] == 'percentage'){
+        $query             = $this->db->query("SELECT `value` FROM " . DB_PREFIX . "setting WHERE `key` = 'referrer_profit_level_".$j."_percentage'");
+        $profit_percentage = $query->row['value'];
+        
+        $clear_profit = ($data['total']/100)*$profit_percentage;
+        $this->db->query("INSERT INTO " . DB_PREFIX . "referrer_log SET customer_id = '".(int)$sponzor."', order_id = '" . (int)$data['order_id']."', price = '".$clear_profit."', date = NOW(), currency_id = '".(int)$data['currency_id']."', currency_value = '".$data['default_currency']."'");
+        $this->db->query("UPDATE `" . DB_PREFIX . "customer` SET `referrer_price` = referrer_price+$clear_profit WHERE `customer_id` = '".$sponzor."'");
+      }
+      
+      if($data['profit_type'] == 'fixed'){
+        $query        = $this->db->query("SELECT `value` FROM " . DB_PREFIX . "setting WHERE `key` = 'referrer_profit_level_".$j."_fixed'");
+        $profit_fixed = $query->row['value'];
+        
+        $clear_profit = $profit_fixed;
+        $this->db->query("INSERT INTO " . DB_PREFIX . "referrer_log SET customer_id = '".(int)$sponzor."', order_id = '" . (int)$data['order_id']."', price = '".$clear_profit."', date = NOW(), currency_id = '".(int)$data['currency_id']."', currency_value = '".$data['default_currency']."'");
+        $this->db->query("UPDATE `" . DB_PREFIX . "customer` SET `referrer_price` = referrer_price+$clear_profit WHERE `customer_id` = '".$sponzor."'");
+      }
+      $j++;
+    }
+    return true;
+  }
+
+
+	public function ReferrerProfit($data) {
+
+//send money for sponzor
+  if($data['order_status_id'] == '5'||$data['order_status_id'] == '3'||$data['order_status_id'] == '13'){
+    if($data['order_price'] AND $data['total'] >= $data['order_price_min']){$this->giveProfit($data);}
+    if(!$data['order_price']){$this->giveProfit($data);}
+  }
+
+//cancel order
+  if($this->db->escape($data['payment_code']) == 'referrer'){
+    $return_money_to_balance = false;
+    if($data['order_status_id'] == '7' || $data['order_status_id'] == '8' || $data['order_status_id'] == '9' || $data['order_status_id'] == '10' || $data['order_status_id'] == '11' || $data['order_status_id'] == '12' || $data['order_status_id'] == '14'){$return_money_to_balance = true;}
+    if($return_money_to_balance){$this->db->query("UPDATE " . DB_PREFIX . "customer SET referrer_price = referrer_price+".$data['total']." WHERE customer_id = '".(int)$data['customer_id']."'");}
+  }
+  }
+  
+  
 	public function editOrder($order_id, $data) {
 		$this->load->model('localisation/country');
 		
@@ -182,6 +245,62 @@ class ModelSaleOrder extends Model {
 		
       	$this->db->query("UPDATE `" . DB_PREFIX . "order` SET firstname = '" . $this->db->escape($data['firstname']) . "', lastname = '" . $this->db->escape($data['lastname']) . "', email = '" . $this->db->escape($data['email']) . "', telephone = '" . $this->db->escape($data['telephone']) . "', fax = '" . $this->db->escape($data['fax']) . "', payment_firstname = '" . $this->db->escape($data['payment_firstname']) . "', payment_lastname = '" . $this->db->escape($data['payment_lastname']) . "', payment_company = '" . $this->db->escape($data['payment_company']) . "', payment_company_id = '" . $this->db->escape($data['payment_company_id']) . "', payment_tax_id = '" . $this->db->escape($data['payment_tax_id']) . "', payment_address_1 = '" . $this->db->escape($data['payment_address_1']) . "', payment_address_2 = '" . $this->db->escape($data['payment_address_2']) . "', payment_city = '" . $this->db->escape($data['payment_city']) . "', payment_postcode = '" . $this->db->escape($data['payment_postcode']) . "', payment_country = '" . $this->db->escape($payment_country) . "', payment_country_id = '" . (int)$data['payment_country_id'] . "', payment_zone = '" . $this->db->escape($payment_zone) . "', payment_zone_id = '" . (int)$data['payment_zone_id'] . "', payment_address_format = '" . $this->db->escape($payment_address_format) . "', payment_method = '" . $this->db->escape($data['payment_method']) . "', payment_code = '" . $this->db->escape($data['payment_code']) . "', shipping_firstname = '" . $this->db->escape($data['shipping_firstname']) . "', shipping_lastname = '" . $this->db->escape($data['shipping_lastname']) . "',  shipping_company = '" . $this->db->escape($data['shipping_company']) . "', shipping_address_1 = '" . $this->db->escape($data['shipping_address_1']) . "', shipping_address_2 = '" . $this->db->escape($data['shipping_address_2']) . "', shipping_city = '" . $this->db->escape($data['shipping_city']) . "', shipping_postcode = '" . $this->db->escape($data['shipping_postcode']) . "', shipping_country = '" . $this->db->escape($shipping_country) . "', shipping_country_id = '" . (int)$data['shipping_country_id'] . "', shipping_zone = '" . $this->db->escape($shipping_zone) . "', shipping_zone_id = '" . (int)$data['shipping_zone_id'] . "', shipping_address_format = '" . $this->db->escape($shipping_address_format) . "', shipping_method = '" . $this->db->escape($data['shipping_method']) . "', shipping_code = '" . $this->db->escape($data['shipping_code']) . "', comment = '" . $this->db->escape($data['comment']) . "', order_status_id = '" . (int)$data['order_status_id'] . "', affiliate_id  = '" . (int)$data['affiliate_id'] . "', date_modified = NOW() WHERE order_id = '" . (int)$order_id . "'");
 		
+		
+		
+		
+//referrer - start
+  $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "setting WHERE `key` = 'referrer_status'");
+  if($query->row['value'] == 1){
+  
+  //order detail
+    $query      = $this->db->query("SELECT * FROM `" . DB_PREFIX . "order` WHERE `order_id` = '$order_id'");
+    $this_order = $query->row;
+  
+  //currency
+    $query            = $this->db->query("SELECT * FROM " . DB_PREFIX . "currency WHERE currency_id = '".(int)$this_order['currency_id']."'");
+    $default_currency = $query->row['value'];
+    
+  //order price
+    $query           = $this->db->query("SELECT `value` FROM " . DB_PREFIX . "setting WHERE `key` = 'order_price'");
+    $order_price     = $query->row['value'];
+    
+  //min order price
+    $query           = $this->db->query("SELECT `value` FROM " . DB_PREFIX . "setting WHERE `key` = 'min_order_price'");
+    $order_price_min = $query->row['value'];
+    
+  //ref_level
+    $query           = $this->db->query("SELECT `value` FROM " . DB_PREFIX . "setting WHERE `key` = 'referrer_level'");
+    $referrer_level  = $query->row['value'];
+    
+  //profit type
+    $query           = $this->db->query("SELECT `value` FROM " . DB_PREFIX . "setting WHERE `key` = 'profit_type'");
+    $profit_type     = $query->row['value'];
+    
+  //customer
+    $query           = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE `customer_id` = '".(int)$this_order['customer_id']."'");
+    $this_customer   = $query->row;
+    
+    $ref_profit_data = array();
+    $ref_profit_data['total']            = (float)$this_order['total'];
+    $ref_profit_data['default_currency'] = $default_currency; //value
+    $ref_profit_data['order_price']      = $order_price;
+    $ref_profit_data['order_price_min']  = $order_price_min;
+    $ref_profit_data['referrer_level']   = $referrer_level;
+    $ref_profit_data['profit_type']      = $profit_type;
+    $ref_profit_data['customer_id']      = $this_order['customer_id'];
+    $ref_profit_data['ref_id']           = $this_customer['referrer_id'];
+    $ref_profit_data['currency_id']      = $this_order['currency_id'];
+    $ref_profit_data['order_id']         = $order_id;
+    $ref_profit_data['order_status_id']  = $data['order_status_id'];
+    $ref_profit_data['payment_code']     = $data['payment_code'];
+    $this->ReferrerProfit($ref_profit_data);
+  }
+//referrer - end
+
+
+
+
+
 		$this->db->query("DELETE FROM " . DB_PREFIX . "order_product WHERE order_id = '" . (int)$order_id . "'"); 
        	$this->db->query("DELETE FROM " . DB_PREFIX . "order_option WHERE order_id = '" . (int)$order_id . "'");
 		$this->db->query("DELETE FROM " . DB_PREFIX . "order_download WHERE order_id = '" . (int)$order_id . "'");
@@ -449,7 +568,7 @@ class ModelSaleOrder extends Model {
 		}
 
 		if (!empty($data['filter_customer'])) {
-			$sql .= " AND LCASE(CONCAT(o.firstname, ' ', o.lastname)) LIKE '%" . $this->db->escape(utf8_strtolower($data['filter_customer'])) . "%'";
+			$sql .= " AND LCASE(CONCAT(o.firstname, ' ', o.lastname)) LIKE '" . $this->db->escape(utf8_strtolower($data['filter_customer'])) . "%'";
 		}
 
 		if (!empty($data['filter_date_added'])) {
@@ -689,14 +808,6 @@ class ModelSaleOrder extends Model {
 	}
 		
 	public function getOrderHistories($order_id, $start = 0, $limit = 10) {
-		if ($start < 0) {
-			$start = 0;
-		}
-		
-		if ($limit < 1) {
-			$limit = 10;
-		}	
-				
 		$query = $this->db->query("SELECT oh.date_added, os.name AS status, oh.comment, oh.notify FROM " . DB_PREFIX . "order_history oh LEFT JOIN " . DB_PREFIX . "order_status os ON oh.order_status_id = os.order_status_id WHERE oh.order_id = '" . (int)$order_id . "' AND os.language_id = '" . (int)$this->config->get('config_language_id') . "' ORDER BY oh.date_added ASC LIMIT " . (int)$start . "," . (int)$limit);
 
 		return $query->rows;
