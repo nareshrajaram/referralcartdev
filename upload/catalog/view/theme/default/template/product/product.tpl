@@ -1,3 +1,8 @@
+<?php
+error_reporting(E_ALL);
+ini_set('error_reporting', E_ALL);
+?>
+
 <?php echo $header; ?><?php echo $column_left; ?><?php echo $column_right; ?>
 <div id="content"><?php echo $content_top; ?>
   <div class="breadcrumb">
@@ -215,12 +220,71 @@
         <div class="minimum"><?php echo $text_minimum; ?></div>
         <?php } ?>
       </div>
-      <?php if ($review_status) { ?>
+
+<?php 
+if($islogged == false)
+{
+?>
+<div class="share">
+      <script type='text/javascript' charset='utf-8' src='catalog/view/javascript/jquery/popbox.js'></script>
+        <link rel='stylesheet' href='catalog/view/javascript/jquery/popbox.css' type='text/css'>
+
+        <div class='popbox'>
+          <a class='open' href='#'>Click Here!</a>
+
+          <div class='collapse'>
+            <div class='box'>
+              <div class='arrow'></div>
+              <div class='arrow-border'></div>
+
+      <form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data">
+	      <div class="content">
+          <b><?php echo $entry_email; ?></b><br />
+          <input type="text" name="email" value="" />
+          <br />
+          <br />
+          <b><?php echo $entry_password; ?></b><br />
+          <input type="password" name="password" value="" />
+          <br />
+          <a href="<?php echo $forgotten; ?>"><?php echo $text_forgotten; ?></a><br />
+          <br />
+          <input type="submit" value="<?php echo $button_login; ?>" class="button" />
+          <?php if ($redirect) { ?>
+          <input type="hidden" name="redirect" value="<?php echo $redirect; ?>" />
+          <?php } ?>
+
+	      </div>
+</form>
+              <a href="#" class="close">close</a>
+            </div>
+          </div>
+        </div>
+<br><br><br>
+</div>
+<script type='text/javascript'>
+           $(document).ready(function(){
+             $('.popbox').popbox();
+           });
+        </script>
+
+<?php } ?>
+
+      <?php if ($review_status && $islogged) { ?>
       <div class="review">
         <div><img src="catalog/view/theme/default/image/stars-<?php echo $rating; ?>.png" alt="<?php echo $reviews; ?>" />&nbsp;&nbsp;<a onclick="$('a[href=\'#tab-review\']').trigger('click');"><?php echo $reviews; ?></a>&nbsp;&nbsp;|&nbsp;&nbsp;<a onclick="$('a[href=\'#tab-review\']').trigger('click');"><?php echo $text_write; ?></a></div>
         <div class="share"><!-- AddThis Button BEGIN -->
-          <div class="addthis_default_style"><a class="addthis_button_compact"><?php echo $text_share; ?></a> <a class="addthis_button_email"></a><a class="addthis_button_print"></a> <a class="addthis_button_facebook"></a> <a class="addthis_button_twitter"></a></div>
+          <div class="addthis_default_style"><a class="addthis_button_compact"  addthis:title="An excellent website"><?php echo $text_share; ?></a> <a class="addthis_button_email"></a><a class="addthis_button_print"></a> <a class="addthis_button_facebook" addthis:url="http://google.com"></a> <a class="addthis_button_twitter"></a>
+
+
+
+
+</div>
           <script type="text/javascript" src="//s7.addthis.com/js/250/addthis_widget.js"></script> 
+
+<script type="text/javascript">
+var islogged = "<?= $islogged ?>";
+</script>
+
           <!-- AddThis Button END --> 
         </div>
       </div>
