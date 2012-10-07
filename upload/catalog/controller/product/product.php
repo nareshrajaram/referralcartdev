@@ -1,7 +1,11 @@
 
 <?php  
+//error_reporting(E_ALL);
+//ini_set('display_errors', true);
+
 class ControllerProductProduct extends Controller {
 	private $error = array(); 
+
 	
 	public function index() { 
 		$this->language->load('product/product');
@@ -14,8 +18,9 @@ class ControllerProductProduct extends Controller {
 			'separator' => false
 		);
 		
-		$this->load->model('catalog/category');	
-		
+		$this->load->model('catalog/category');
+
+
 		if (isset($this->request->get['path'])) {
 			$path = '';
 				
@@ -359,12 +364,43 @@ class ControllerProductProduct extends Controller {
 			} else {
 				$this->template = 'default/template/product/product.tpl';
 			}
+
             if($this->customer->isLogged())
             {
+                $data = array();
                 $this->data['islogged'] = true;
+                $this->data['customer_id'] = $this->customer->getId();
+                if (isset($this->request->get['cid'])) {
+                    $this->data['cid'] = $this->request->get['cid'];
+                    $data = $this->productGetPromotion();
+                    if(!$data)
+                    {
+                        $this->productInstallPromotion();
+                        $data = $this->productGetPromotion();
+                    }
+                    $this->session->data['cid'] = $this->request->get['cid'];
+                } else {
+                    $data = $this->productGetPromotion();
+                    if(!$data)
+                    {
+                        $this->data['cid'] = false;
+                        $this->productInstallPromotion();
+                        $data = $this->productGetPromotion();
+                    }
+                }
+                $this->data['pro_amount'] = $data['pro_amount'];
+                $this->data['pro_amount_available'] = $data['pro_amount_available'];
             } 
             else
             {
+                $this->data['customer_id'] = $this->customer->getId();
+                if (isset($this->request->get['cid'])) {
+                    $this->session->data['cid'] = $this->request->get['cid'];
+                    $this->data['cid'] = $this->request->get['cid'];
+                } else {
+                    $this->data['cid'] = false;
+                }
+
                 $this->data['islogged'] = false;
             }
             $this->data['entry_email'] = $this->language->get('entry_email');;
@@ -388,7 +424,14 @@ class ControllerProductProduct extends Controller {
 		} else {
 			$this->data['error_warning'] = '';
 		}
-        $this->data['redirect'] = $this->url->link('product/product', $url . '&product_id=' . $this->request->get['product_id']);
+        if (isset($this->session->data['cid']))
+        {
+            $this->data['redirect'] = $this->url->link('product/product', $url . '&product_id=' . $this->request->get['product_id'] . '&cid=' . $this->session->data['cid']);
+        }
+        else
+        {
+            $this->data['redirect'] = $this->url->link('product/product', $url . '&product_id=' . $this->request->get['product_id']);
+        }
         $this->data['action'] = $this->url->link('account/login', '', 'SSL');
 
             
@@ -463,6 +506,46 @@ class ControllerProductProduct extends Controller {
     	}
   	}
 	
+     public function productGetPromotion() {
+        $this->load->model('catalog/promotion');
+		if(!$this->model_catalog_promotion->checkPromotionInstalled()){
+//            echo "Promotion not installed ";
+            $this->model_catalog_promotion->installPromotion();
+        } 
+        else 
+        {
+//            echo "installed promotion";      
+        }
+        
+        $promotion = $this->model_catalog_promotion->getPromotion($this->customer->getId(), $this->request->get['product_id']);
+        //print $promotion;
+        return $promotion;
+    }
+    
+    private function productInstallPromotion()
+    {
+        $this->load->model('catalog/promotion');
+        if($this->model_catalog_promotion->getPromotion($this->customer->getId(), $this->request->get['product_id']))
+        {
+            return;
+        }
+        $data['product_id'] = $this->request->get['product_id'];
+        $data['customer_id'] = $this->customer->getId();
+
+        if($this->data['cid'] == false)
+        {
+            $data['parent_id'] = 0;
+            $data['pro_amount'] = 0;
+        } else {
+            $data['parent_id'] = $this->request->get['cid'];
+            $data['pro_amount'] = 0;
+        }
+        if($data['parent_id'] == $data['customer_id'])
+            $data['parent_id'] = 0;
+
+        $this->model_catalog_promotion->addPromotion($data);
+    }
+
 	public function review() {
     	$this->language->load('product/product');
 		
@@ -601,5 +684,34 @@ class ControllerProductProduct extends Controller {
 		
 		$this->response->setOutput(json_encode($json));		
 	}
+
+    public function updatePromotion() {
+
+				
+		if (isset($this->request->get['pid'])) {
+			$pid = $this->request->get['pid'];
+		} else {
+			$pid = 0;
+		}
+
+		if (isset($this->request->get['cid'])) {
+			$cid = $this->request->get['cid'];
+		} else {
+			$cid = 0;
+		}
+
+		if (isset($this->request->get['amount'])) {
+			$amount = $this->request->get['amount'];
+		} else {
+			$amount = 0;
+		}
+
+//        echo "$pid $cid $amount \n";
+		$this->load->model('catalog/promotion');
+        $this->model_catalog_promotion->updatePromotion($pid, $cid, $amount);
+	}
+
 }
+
+
 ?>

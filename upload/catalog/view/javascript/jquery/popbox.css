@@ -1,21 +1,35 @@
 .popbox {
   margin:0px auto;
   text-align:center;
-  position:relative;
+  position:absolute;
 }
 
   .collapse { position:relative; }
 
   .open {
-    background:#DDD;
-    border:solid 1px #FFF;
-    border-radius:5px;
-    box-shadow: 0px 0px 5px #CCC;
-    background:-webkit-gradient(linear,left top,left bottom,from(#f4f4f4),to(#e8e8e8));
-    background:-moz-linear-gradient(top,#f4f4f4,#e8e8e8);
-    background:linear-gradient(top,#f4f4f4,#e8e8e8);
-    padding:8px;
+	cursor: pointer;
+	color: #FFFFFF;
+	line-height: 12px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-color: #FFFFFF;
+	font-weight: bold;
+	background: url('../../theme/default/image/button.png') top left repeat-x;
+	-webkit-border-radius: 7px 7px 7px 7px;
+	-moz-border-radius: 7px 7px 7px 7px;
+	-khtml-border-radius: 7px 7px 7px 7px;
+	border-radius: 7px 7px 7px 7px;
+	-webkit-box-shadow: 0px 2px 2px #DDDDDD;
+	-moz-box-shadow: 0px 2px 2px #DDDDDD;
+	box-shadow: 0px 2px 2px #DDDDDD;
+	display: inline-block;
+	text-decoration: none;
+	padding: 6px 12px 6px 12px;
   }
+
+open:hover, .open:hover {
+	background: url('../../theme/default/image/button-active.png') repeat-x;
+}
 
     .box {
       display:block;

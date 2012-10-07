@@ -164,7 +164,6 @@ function addToCompare(product_id) {
 		dataType: 'json',
 		success: function(json) {
 			$('.success, .warning, .attention, .information').remove();
-						
 			if (json['success']) {
 				$('#notification').html('<div class="success" style="display: none;">' + json['success'] + '<img src="catalog/view/theme/default/image/close.png" alt="" class="close" /></div>');
 				
@@ -173,6 +172,24 @@ function addToCompare(product_id) {
 				$('#compare-total').html(json['total']);
 				
 				$('html, body').animate({ scrollTop: 0 }, 'slow'); 
+			}
+		}
+	});
+}
+
+
+function updatePromotion(pid, cid, amount)
+{
+    	$.ajax({
+		url: 'index.php?route=product/product/updatePromotion',
+		type: 'get',
+	        data: '&pid=' + pid + '&cid=' + cid + '&amount=' + amount,
+		dataType: 'json',
+		success: function(json) {
+			$('.success, .warning, .attention, .information').remove();
+						
+			if (json['success']) {
+			    			    
 			}	
 		}
 	});

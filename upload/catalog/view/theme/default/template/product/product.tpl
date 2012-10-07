@@ -1,6 +1,6 @@
 <?php
-error_reporting(E_ALL);
-ini_set('error_reporting', E_ALL);
+//error_reporting(E_ALL);
+//ini_set('error_reporting', E_ALL);
 ?>
 
 <?php echo $header; ?><?php echo $column_left; ?><?php echo $column_right; ?>
@@ -229,9 +229,9 @@ if($islogged == false)
       <script type='text/javascript' charset='utf-8' src='catalog/view/javascript/jquery/popbox.js'></script>
         <link rel='stylesheet' href='catalog/view/javascript/jquery/popbox.css' type='text/css'>
 
-        <div class='popbox'>
+        <div class='popbox' style="width: 147px;">
           <a class='open' href='#'>Click Here!</a>
-
+	  &nbsp to share this product.
           <div class='collapse'>
             <div class='box'>
               <div class='arrow'></div>
@@ -246,7 +246,6 @@ if($islogged == false)
           <b><?php echo $entry_password; ?></b><br />
           <input type="password" name="password" value="" />
           <br />
-          <a href="<?php echo $forgotten; ?>"><?php echo $text_forgotten; ?></a><br />
           <br />
           <input type="submit" value="<?php echo $button_login; ?>" class="button" />
           <?php if ($redirect) { ?>
@@ -254,7 +253,7 @@ if($islogged == false)
           <?php } ?>
 
 	      </div>
-</form>
+	      </form>
               <a href="#" class="close">close</a>
             </div>
           </div>
@@ -269,11 +268,22 @@ if($islogged == false)
 
 <?php } ?>
 
-      <?php if ($review_status && $islogged) { ?>
+      <?php if ($review_status && $islogged) { 
+      $purl = "http://127.0.0.1/referralcart/index.php?route=product/product&product_id=$product_id&cid=$customer_id";
+?>
       <div class="review">
         <div><img src="catalog/view/theme/default/image/stars-<?php echo $rating; ?>.png" alt="<?php echo $reviews; ?>" />&nbsp;&nbsp;<a onclick="$('a[href=\'#tab-review\']').trigger('click');"><?php echo $reviews; ?></a>&nbsp;&nbsp;|&nbsp;&nbsp;<a onclick="$('a[href=\'#tab-review\']').trigger('click');"><?php echo $text_write; ?></a></div>
         <div class="share"><!-- AddThis Button BEGIN -->
-          <div class="addthis_default_style"><a class="addthis_button_compact"  addthis:title="An excellent website"><?php echo $text_share; ?></a> <a class="addthis_button_email"></a><a class="addthis_button_print"></a> <a class="addthis_button_facebook" addthis:url="http://google.com"></a> <a class="addthis_button_twitter"></a>
+<div id=amt>
+	<?php
+	if($pro_amount == 0) {
+	 echo "Click to share $";?>
+	 
+          <input type="text" name="amttoshare" size="2" value="<?php echo $minimum; ?>" />&nbsp max $<?php echo $pro_amount_available; ?> 
+	  <br><br>
+	  <?php } else { echo "Share this product for $$pro_amount <br> <br>" ;}?>
+	  </div>
+          <div class="addthis_default_style"><a class="addthis_button_compact"  addthis:title="Sale Share"><?php echo $text_share; ?></a> <a class="addthis_button_email"></a><a class="addthis_button_print"></a> <a class="addthis_button_facebook" addthis:url="<?php echo $purl ?>"></a> <a class="addthis_button_twitter"></a>
 
 
 
@@ -396,7 +406,29 @@ var islogged = "<?= $islogged ?>";
   </div>
   <?php } ?>
   <?php echo $content_bottom; ?></div>
-<script type="text/javascript"><!--
+
+
+<script type="text/javascript">
+
+// Alert a message when the user shares somewhere
+function shareEventHandler(evt) { 
+    if (evt.type == 'addthis.menu.share') { 
+        //alert(typeof(evt.data)); // evt.data is an object hash containing all event data
+//        alert(evt.data.service); // evt.data.service is specific to the "addthis.menu.share" event
+	  if(typeof $('[name=amttoshare]').val() != 'undefined') {
+	  <?php if($pro_amount != 0) ?>
+	      updatePromotion(<?php echo "$product_id,$customer_id ";?>, $('[name=amttoshare]').val());
+
+ 	  document.getElementById("amt").innerHTML = "Share this product for $"+$('[name=amttoshare]').val()+"<br><br>";
+	  }
+
+	return false;
+    }
+}
+
+// Listen for the share event
+addthis.addEventListener('addthis.menu.share', shareEventHandler);
+
 $('.colorbox').colorbox({
 	overlayClose: true,
 	opacity: 0.5
